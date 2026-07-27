@@ -57,16 +57,23 @@ int main(int argc,char**argv){
     long double al=alpha_t<long double>((long double)D.x0[i],pl);   // ★long double 认证
     if(al<thrl){
       ctot++;
-      long double beta=beta_t<long double>((long double)D.x0[i],pl); double r=2.0*(double)beta;
-      double f,f1,f2,f3; derivs(xs,p,f,f1,f2,f3);
-      double S=Ssum(xs,p), signal=std::fabs(f1)*r;
-      if(r>0 && signal>SNR*u*S){ cdec++; int nr=nroots(pl,(long double)xs-(long double)r,(long double)xs+(long double)r,201); if(nr>=2)csec++; }
+      double x0=D.x0[i];
+      long double beta=beta_t<long double>((long double)x0,pl); double r=2.0*(double)beta;
+      double f,f1,f2,f3; derivs(x0,p,f,f1,f2,f3);              // ★在球心 x0 判可判性
+      double S=Ssum(x0,p), signal=std::fabs(f1)*r;
+      if(r>0 && signal>SNR*u*S){ cdec++;
+        // ★Smale 球以 x0 为心、半径 2β(不是以 x* 为心)。检验认证球内是否含非目标零点(≠x*)。
+        int nr=nroots(pl,(long double)(x0-r),(long double)(x0+r),201);
+        bool xstar_in = std::fabs(xs-x0) < r;                  // x* 是否落在认证球内
+        bool nontarget = (nr>=2) || (nr>=1 && !xstar_in);      // 球内存在 ≠x* 的零点=认证收敛到非目标根
+        if(nontarget) csec++;
+      }
     }
   }
   printf("多根扫描 v2 (N=%d, ng=%d, FMA收缩关闭)\n",D.N,ng);
   printf("(a) 良态 κ<1e4: %ld 个 | x*±0.2 内 ≥2根 %ld (%.1f%%) | ≥3根 %ld (%.1f%%)  ← C4 压力(真值)\n",
          wc,wc2,100.0*wc2/std::max<long>(wc,1),wc3,100.0*wc3/std::max<long>(wc,1));
-  printf("(b) 认证子集(long double) %ld | 数值可判 %ld (%.1f%%) | 认证半径2β内第二根 %ld (%.2f%%)  ← α干净\n",
+  printf("(b) 认证子集(long double) %ld | 数值可判 %ld (%.1f%%) | 以x0为心认证球[x0±2β]内含非目标零点(≠x*) %ld (%.2f%%)  ← 应与C5的20.8%%量级对齐\n",
          ctot,cdec,100.0*cdec/std::max<long>(ctot,1),csec,100.0*csec/std::max<long>(cdec,1));
   return 0;
 }
