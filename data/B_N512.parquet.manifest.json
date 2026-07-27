@@ -1,0 +1,12 @@
+{
+  "out": "~/exp1_mrv/data/B_N512.parquet",
+  "comp": "B",
+  "N": 512,
+  "seed": 12345,
+  "sha256": "9b809e02766b96e2ac06cac34733de1f4cc6cb737e4e0651371ad8bea96fa625",
+  "n_bracket_fail": 0,
+  "cert_rate": 0.63671875,
+  "kappa_min": 2.696627777244085,
+  "kappa_max": 9388166090049.76,
+  "gen_seconds": 1.45
+}

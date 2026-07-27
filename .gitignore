@@ -1,0 +1,31 @@
+# 大数据(可由 seed 重生成)
+*.parquet
+*.bin
+!*.manifest.json
+# 编译产物
+*.o
+*.out
+solver
+solver_timed
+solver_matrix
+canonical
+check_alpha
+diag_alpha
+multiroot
+cpu_baseline
+order_mp
+diff3
+stepdist
+peak_flops
+df32_test
+# 缓存/临时
+__pycache__/
+*.pyc
+*.err
+build.err
+*.log
+!logs/*.log
+# 私有连接助手(含服务器凭据) —— 绝不入库
+_b300.py
+_abc66.py
+.env

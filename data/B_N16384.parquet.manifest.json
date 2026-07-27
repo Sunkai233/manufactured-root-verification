@@ -1,0 +1,12 @@
+{
+  "out": "data/B_N16384.parquet",
+  "comp": "B",
+  "N": 16384,
+  "seed": 20260726,
+  "sha256": "72550eb94f2afb103748548ea9918331718ef35540659e11b6436b521bc2b9d8",
+  "n_bracket_fail": 0,
+  "cert_rate": 0.64727783203125,
+  "kappa_min": 3.2384469237554154,
+  "kappa_max": 243690191208542.78,
+  "gen_seconds": 42.83
+}
