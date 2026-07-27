@@ -82,8 +82,11 @@ def fig_stepdist():
     ax.bar(x+w/2,hu,w,color=VERM,label="未认证 (n=%d, 中位%d, 均值%.2f, 失败%.2f%%)"%(nu,mu,au,fu))
     ax.set_xticks(list(range(0,DISP+1,2))+[DISP+1])
     ax.set_xticklabels([str(i) for i in range(0,DISP+1,2)]+[f">{DISP}"])
-    ax.set_xlabel("达 ε 所需 Newton 迭代步数 (全量含溢出桶)"); ax.set_ylabel("占比")
-    ax.set_title("认证价值=步数分布:认证点质量 vs 未认证长尾"); ax.legend(); ax.grid(axis="y",alpha=.25)
+    ax.set_xlabel("达 ε 所需 Newton 迭代步数 (全量含溢出桶; 数据集 kindep)"); ax.set_ylabel("占比")
+    ax.set_title("认证价值=步数分布(kindep):认证点步数短 vs 未认证长尾")
+    ax.text(0.98,0.60,"注: 干净分离在“步数”,\n非“认证点必达 x*”\n(kindep 大偏移下 20.8%\n认证点收敛到邻根)",
+            transform=ax.transAxes,ha="right",va="top",fontsize=7.5,color=GRAY)
+    ax.legend(loc="upper right"); ax.grid(axis="y",alpha=.25)
     save(fig,"fig4_stepdist")
 
 # ---------- 图5 线程束浪费(实测步数) ----------
