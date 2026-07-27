@@ -51,6 +51,19 @@ __device__ __forceinline__ df step_df(int D,df f,df f1,df f2,df f3){
   df den=df_sub(df_sub(df_mul(df_mul(mkdf(6.f),f),df_mul(f1,f2)),df_mul(df_mul(f,f),f3)),df_mul(df_mul(mkdf(6.f),f1),df_mul(f1,f1)));
   return df_div(num,den);
 }
+// fp32 快速内建路径(与 solver_timed 的 G5 一致: __expf/__logf/__sinf, 否则准确 expf 慢 ~1.4×)
+__device__ __forceinline__ void dvf(float x,float a,float b,float c,float dd,float w,float s0,float s1,float&f,float&f1,float&f2,float&f3){
+  float ex=__expf(a*x); float E=x*ex,E1=ex*(a*x+1),E2=a*ex*(a*x+2),E3=a*a*ex*(a*x+3);
+  float u=1+c*x; float L1=b*c/u,L2=-b*c*c/(u*u),L3=2*b*c*c*c/(u*u*u),L=b*__logf(u);
+  float sw=__sinf(w*x),cw=__cosf(w*x); float S=dd*sw,S1=dd*w*cw,S2=-dd*w*w*sw,S3=-dd*w*w*w*cw;
+  f=E+L+S+s1*x+s0; f1=E1+L1+S1+s1; f2=E2+L2+S2; f3=E3+L3+S3;
+}
+template<int D> __global__ void k_f32fast(In in,const double*x0,double*xo,int N,int ns){
+  int i=blockIdx.x*blockDim.x+threadIdx.x; if(i>=N)return;
+  float A=in.a[i],B=in.b[i],C=in.c[i],Dd=in.d[i],W=in.w[i],S0=in.s0[i],S1=in.s1[i],x=(float)x0[i],f,f1,f2,f3;
+  for(int k=0;k<ns;k++){ dvf(x,A,B,C,Dd,W,S0,S1,f,f1,f2,f3); float s=step_ord<float>(D,f,f1,f2,f3); if(isfinite(s))x+=s; }
+  xo[i]=(double)x;
+}
 template<int D> __global__ void k_df(In in,const double*x0,double*xo,int N,int ns){
   int i=blockIdx.x*blockDim.x+threadIdx.x; if(i>=N)return;
   df A=dffd(in.a[i]),B=dffd(in.b[i]),C=dffd(in.c[i]),Dd=dffd(in.d[i]),W=dffd(in.w[i]),S0=dffd(in.s0[i]),S1=dffd(in.s1[i]),x=dffd(x0[i]),f,f1,f2,f3;
@@ -88,8 +101,8 @@ int main(int argc,char**argv){
   bench("df32",2,[&]{k_df<1><<<bl,th>>>(in,dx0,dxo,(int)N,ns);});
   bench("df32",3,[&]{k_df<2><<<bl,th>>>(in,dx0,dxo,(int)N,ns);});
   bench("df32",4,[&]{k_df<3><<<bl,th>>>(in,dx0,dxo,(int)N,ns);});
-  bench("fp32",2,[&]{k_native<float,1><<<bl,th>>>(in,dx0,dxo,(int)N,ns);});
-  bench("fp32",3,[&]{k_native<float,2><<<bl,th>>>(in,dx0,dxo,(int)N,ns);});
-  bench("fp32",4,[&]{k_native<float,3><<<bl,th>>>(in,dx0,dxo,(int)N,ns);});
+  bench("fp32",2,[&]{k_f32fast<1><<<bl,th>>>(in,dx0,dxo,(int)N,ns);});  // 快速内建, 与 G5 一致
+  bench("fp32",3,[&]{k_f32fast<2><<<bl,th>>>(in,dx0,dxo,(int)N,ns);});
+  bench("fp32",4,[&]{k_f32fast<3><<<bl,th>>>(in,dx0,dxo,(int)N,ns);});
   return 0;
 }

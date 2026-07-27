@@ -29,7 +29,7 @@ inst=pd.DataFrame({"idx":np.arange(N),"kappa":kap,"gamma":al.gamma.values,"alpha
 inst.to_csv(OUT,index=False)
 
 cert=inst.cert.values.astype(bool); u=2.0**-53; L=[]
-L.append("== 唯一真源 instances.csv (N=%d, u=2^-53, 自适应ε=max(1e-11,8uκ)) =="%N)
+L.append("== 唯一真源 %s (N=%d, u=2^-53, 自适应ε=max(1e-11,8uκ)) =="%(os.path.basename(OUT),N))
 L.append("认证对账: long double(主用) %d (%.2f%%) | double(β=0 bug) %d | gen mpmath %s"
          %(cert.sum(),100*cert.mean(),int(inst.cert_d.sum()),(str(int((gen_cert==1).sum())) if (gen_cert>=0).any() else "NA")))
 comp=inst.compliant.values[cert]

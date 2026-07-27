@@ -66,7 +66,7 @@ def fig_diff():
 
 # ---------- 图4 认证 vs 未认证 步数分布(唯一真源, 全量+溢出桶) ----------
 def fig_stepdist():
-    df=pd.read_csv(os.path.join(HERE,"instances.csv"))
+    df=pd.read_csv(os.path.join(HERE,"instances_cert.csv"))  # kindep 认证数据集(认证收敛/未认证不收敛的干净分离)
     cap=40; DISP=15   # 显示 0..DISP, 其余(含失败>cap)并入溢出桶
     kn=df.kn.values; cert=df.cert.values.astype(bool)   # cert = long double 稳健认证
     def hist(mask):
@@ -88,8 +88,8 @@ def fig_stepdist():
 
 # ---------- 图5 线程束浪费(实测步数) ----------
 def fig_warp():
-    # 运行时从唯一真源算(不再硬编码), 多调度键对比
-    df=pd.read_csv(os.path.join(HERE,"instances.csv"))
+    # 运行时从 floorscaled 数据集算(有真实难度方差, 调度键才有意义; kindep 步数近均匀不适合)
+    df=pd.read_csv(os.path.join(HERE,"instances_floor.csv"))
     kh=df.kh.values; kap=df.kappa.values; al=df.alpha.values; ce=df.cert.values
     def ww(order,ns=8):
         s=np.minimum(kh[order],ns); m=len(s)//32*32; s=s[:m].reshape(-1,32)
@@ -102,8 +102,8 @@ def fig_warp():
     b=ax.bar(labs,vals,color=cols)
     for r,v in zip(b,vals): ax.text(r.get_x()+r.get_width()/2,v+0.012,f"{v:.3f}",ha="center",fontsize=9)
     ax.text(5,0.05,"定义值",ha="center",fontsize=8,color=GRAY)
-    ax.set_ylabel("线程束浪费 (锁步, 步数封顶 ns=8)"); ax.set_ylim(0,max(vals)*1.2)
-    ax.set_title("warp-waste:可实现键仅小幅降(认证标志几乎无用),固定步靠构造归零")
+    ax.set_ylabel("线程束浪费 (锁步, 步数封顶 ns=8, floorscaled)"); ax.set_ylim(0,max(vals)*1.25)
+    ax.set_title("warp-waste:κ/α/认证 先验键均大幅降(0.63→~0.3),固定步靠构造归零")
     ax.grid(axis="y",alpha=.25); plt.setp(ax.get_xticklabels(),fontsize=8.5)
     save(fig,"fig5_warp")
 

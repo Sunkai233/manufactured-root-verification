@@ -8,6 +8,10 @@
 solver
 solver_timed
 solver_matrix
+solver_fp64
+solver_fp32
+solver_df32
+multiroot_fma
 canonical
 check_alpha
 diag_alpha
