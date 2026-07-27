@@ -75,10 +75,14 @@ python src/reference_solver.py data/B_floor.parquet --procs 128     # 高精度�
 python src/export_bin.py data/B_floor.parquet data/B_floor.bin
 # 2. CUDA 求解 + 计时(sm_103 示例; 换 -arch 对应你的卡)
 nvcc -O3 -arch=sm_103 src/solver_timed.cu -o solver_timed && ./solver_timed data/B_floor.bin G3 8 xhat.bin
-# 3. 唯一真源 + 图
+# 3. 唯一真源 + 图(build_canonical 同时写 kappa.bin,multiroot 依赖它、缺则硬报错不静默回退)
 g++ -O3 -march=native v2_cpp/canonical.cpp -o canonical -Iv2_cpp/include
-python v2_cpp/build_canonical.py; python v2_cpp/figures.py
+python v2_cpp/build_canonical.py <parquet> <xhat前缀> <输出csv> <alpha_data>   # 见 rerun_cert.sh/rerun_floor.sh
+python v2_cpp/figures.py
+# 多根扫描(必须先有 kappa.bin): g++ -O3 -march=native -ffp-contract=off v2_cpp/multiroot.cpp -o multiroot -Iv2_cpp/include
 ```
+
+> 两个数据集:`instances_floor.csv`(floorscaled,fig2/C2/M1-M9)与 `instances_cert.csv`(kindep,fig4 认证价值);fig5 warp 用 floorscaled。∝1/γ 旧构造已从 gen 移除,legacy 数据不再产生。
 
 **硬件**:8× NVIDIA B300 SXM6(sm_103,CUDA 13.2)+ 对照卡 RTX 5090(sm_120)。CPU 基线 g++ -O3 -march=native + OpenMP。
 

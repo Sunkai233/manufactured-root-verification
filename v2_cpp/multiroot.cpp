@@ -16,7 +16,11 @@ Data load(const char* fn,const char* kf){
   Data D; D.N=N; auto col=[&](int j){return std::vector<double>(buf.begin()+(size_t)j*N,buf.begin()+(size_t)(j+1)*N);};
   D.a=col(0);D.b=col(1);D.c=col(2);D.d=col(3);D.w=col(4);D.s0=col(5);D.s1=col(6);D.x0=col(7);D.gam=col(8);D.xs=col(9);
   fclose(f);
-  D.kap.resize(N); FILE* fk=fopen(kf,"rb"); if(fk){ if(fread(D.kap.data(),8,N,fk)!=(size_t)N){} fclose(fk);} else for(int i=0;i<N;i++)D.kap[i]=D.gam[i];
+  // ★硬报错: 不静默回退 γ(否则会重蹈 γ 冒充 κ 的 bug)。kappa.bin 由 build_canonical.py 生成。
+  D.kap.resize(N); FILE* fk=fopen(kf,"rb");
+  if(!fk){ fprintf(stderr,"ERROR: 打不开 %s —— 先跑 build_canonical.py 生成 kappa.bin(parquet 的 kappa 列)\n",kf); exit(1); }
+  if(fread(D.kap.data(),8,N,fk)!=(size_t)N){ fprintf(stderr,"ERROR: %s 短读, 期望 %d 个 double\n",kf,N); fclose(fk); exit(1); }
+  fclose(fk);
   return D;
 }
 inline bool in_dom(double x,double c){ return (1.0+c*x)>1e-300; }
